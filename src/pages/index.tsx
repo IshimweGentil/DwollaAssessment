@@ -67,8 +67,9 @@ const Home = () => {
               <TableContainer 
               component={Paper}
               sx={{
-                width:'100%',
-                maxWidth: { xs: '100%', sm: '90%', md: '75%',lg:'45%' }
+                marginTop:5,
+                marginBottom:5,
+                maxWidth: { xs: '100%', sm: '90%', md: '85%',lg:'45%' }
               }}
               >
                   <Box
@@ -80,12 +81,12 @@ const Home = () => {
                       }}
                     >
                       <Box>
-                        <p>15 Customers</p> 
+                        <p>{data ? `${data.length} Customers` : '0 Customers'}</p> 
                       </Box>
 
                       <Button 
                         variant="contained" 
-                        startIcon={<AddRounded />} 
+                        endIcon={<AddRounded />} 
                         sx={{ ml: 'auto' }} 
                         onClick={handleOpen}
                       >
