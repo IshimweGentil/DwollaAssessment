@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-
+import {useState} from 'react';
 
 interface AddCustomerProps {
     open: boolean;
@@ -25,6 +25,50 @@ interface AddCustomerProps {
   };
   
   const AddCustomer: React.FC<AddCustomerProps> = ({ open, handleClose }) => {
+    const [customer, setCustomer] = useState({
+        firstName: '',
+        lastName: '',
+        businessName: '',
+        email: ''
+    }) //added useState hooks to track info entered by user
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCustomer({...customer, [e.target.name]: e.target.value});
+    } //updates corresponding state when an input field is changed
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await fetch('/api/customers', { //sends request to the API endpoint to add a new customer
+                method: 'POST', //sepcifies POST request
+                headers: {
+                    'Content-Type': 'application/json', //request is JSON format
+                },
+                body: JSON.stringify(customer), //turns customer object into a JSON string
+            });
+            if (!response.ok) {
+                throw new Error('Failed to add customer');
+            }
+
+            setCustomer({
+                firstName: '',
+                lastName: '',
+                businessName: '',
+                email: ''
+            }); //resets the customer object to empty strings after successful submission
+
+            handleClose(); //closes the modal after submission
+        }   catch(err) {
+            setError('Failed to add customer. Please try again.');
+        }   finally {
+            setLoading(false); //sets loading to false after submission
+        }
+    }
+
     return (
         <Box
         >
@@ -39,16 +83,28 @@ interface AddCustomerProps {
                     </Typography>
 
                     <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }}>
-                        <TextField id="outlined-basic" label="First Name *" variant="outlined" />
-                        <TextField id="outlined-basic" label="Last Name *" variant="outlined" />
-                        <TextField id="outlined-basic" label="Business Name *" variant="outlined" />
+
+                        {/* connected input fields to state using value and onChange */}
+
+                        <TextField name="firstName" label="First Name" variant="outlined" value={customer.firstName} onChange={handleChange} required />
+                        <TextField name="lastName" label="Last Name" variant="outlined" value={customer.lastName} onChange={handleChange} required />
+                        <TextField name="businessName" label="Business Name" variant="outlined" value={customer.businessName} onChange={handleChange}  />
                     </Stack>
-                    <TextField id="outlined-basic" label="Email *" variant="outlined" sx={{width:'100%', justifyContent: 'flex-end',}}/>
+                    <TextField name="email" label="Email" variant="outlined" value={customer.email} onChange={handleChange} required sx={{width:'100%', justifyContent: 'flex-end',}}/>
+
+                    {error && <Typography color="error" sx={{ marginTop: 1 }}>{error}</Typography>}
 
                     <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 2}}>
                         <Stack spacing={2} direction="row" sx={{ marginTop: 2,}}>
-                            <Button onClick={handleClose}>Cancel</Button>
-                            <Button variant="contained">Create</Button>
+
+                            {/* cancel button closes modal and is disabled when loading */}
+                            {/* create button triggers handleSubmit and updates label when loading */}
+                            <Button onClick={handleClose} disabled={loading}>Cancel</Button>
+                                <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+                                {loading ? 'Adding...' : 'Create'}
+                            </Button>
+
+
                         </Stack>
                     </Box>
                 </Box>
